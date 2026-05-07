@@ -1,0 +1,29 @@
+# Deploy to: /etc/systemd/system/console-font-fix.service on Pi
+#
+# Then enable and start:
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable console-font-fix.service
+#   sudo systemctl start console-font-fix.service
+#
+# What this does:
+#   Re-runs setupcon after multi-user.target so the Terminus font is applied
+#   AFTER the vc4-kms-v3d KMS framebuffer initializes. Without this, the KMS
+#   driver resets the console font to the default VGA font on many boots, even
+#   when /etc/default/console-setup is correctly configured.
+#
+# Why this is needed:
+#   console-setup.service runs early in boot before the KMS framebuffer is
+#   ready. When vc4-kms-v3d initializes later, it resets the font. This unit
+#   runs after multi-user.target to guarantee the framebuffer is up first.
+
+[Unit]
+Description=Re-apply console font after KMS framebuffer init
+After=multi-user.target console-setup.service
+Wants=console-setup.service
+
+[Service]
+Type=oneshot
+ExecStart=/bin/setupcon
+
+[Install]
+WantedBy=multi-user.target

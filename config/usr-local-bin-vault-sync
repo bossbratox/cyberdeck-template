@@ -1,0 +1,66 @@
+#!/bin/bash
+# Deploy to: /usr/local/bin/vault-sync on Pi
+#
+# Bidirectional vault sync: ~/Vault <-> nextcloud:/mnt/ncdata/admin/files/Vault
+# Uses rsync --update (newer file wins) in both directions.
+# Pull first (get remote changes), then push (send local edits).
+# Logs to /tmp/vault-sync.log.
+#
+# Triggered automatically by wifi_tui.py on connect.
+# Can also be run manually: vault-sync
+
+set -euo pipefail
+
+REMOTE="<YOUR_SYNC_SERVER>"
+REMOTE_PATH="<YOUR_REMOTE_VAULT_PATH>"
+LOCAL_PATH="$HOME/Vault/"
+LOG="/tmp/vault-sync.log"
+
+log() { echo "[$(date '+%H:%M:%S')] $*" | tee -a "$LOG"; }
+
+log "vault-sync start"
+
+# Ensure local vault dir exists
+mkdir -p "$LOCAL_PATH"
+
+# Test SSH connectivity first (BatchMode = no password prompt, fast fail)
+if ! ssh -o BatchMode=yes -o ConnectTimeout=5 "$REMOTE" echo ok >/dev/null 2>&1; then
+    log "vault-sync: $REMOTE unreachable, skip"
+    exit 0
+fi
+
+# Pull: get files newer on remote (or missing locally)
+# sudo needed on nextcloud because /mnt/ncdata is www-data owned
+log "pull: $REMOTE:$REMOTE_PATH -> $LOCAL_PATH"
+rsync -az --update \
+    --rsync-path="sudo rsync" \
+    --exclude=".obsidian/" \
+    --exclude=".trash/" \
+    --exclude=".*" \
+    "$REMOTE:$REMOTE_PATH" "$LOCAL_PATH" 2>&1 | tee -a "$LOG"
+
+# Push: send files newer locally (edits made while offline)
+# --chown forces www-data:www-data on remote (otherwise Nextcloud can't write
+# .part transfer files for WebDAV uploads — Obsidian gets 500 Internal Server Error).
+# --no-perms / --chmod keeps remote-side perms standard regardless of pi-side modes.
+log "push: $LOCAL_PATH -> $REMOTE:$REMOTE_PATH"
+rsync -az --update --itemize-changes \
+    --rsync-path="sudo rsync" \
+    --chown=www-data:www-data \
+    --chmod=Du=rwx,Dgo=rx,Fu=rw,Fgo=r \
+    --exclude=".obsidian/" \
+    --exclude=".trash/" \
+    --exclude=".*" \
+    "$LOCAL_PATH" "$REMOTE:$REMOTE_PATH" 2>&1 | tee -a "$LOG.tmp"
+cat "$LOG.tmp" >> "$LOG"
+
+# Tell Nextcloud to rescan so its DB picks up files written via rsync.
+# Without this, Obsidian/Web UI shows stale state and 500 errors on sync.
+# Only scan if push actually changed anything (avoid 2-3s overhead per sync).
+if grep -qE '^[<>][f]' "$LOG.tmp" 2>/dev/null; then
+    log "occ files:scan (push changed files)"
+    ssh "$REMOTE" "sudo docker exec --user www-data nextcloud-aio-nextcloud php occ files:scan --path='admin/files/Vault' --quiet" 2>&1 | tee -a "$LOG" || log "occ scan failed (non-fatal)"
+fi
+rm -f "$LOG.tmp"
+
+log "vault-sync done"

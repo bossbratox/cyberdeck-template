@@ -1,0 +1,34 @@
+# Deploy to: /etc/systemd/system/restore-persistent-state.service on Pi
+#
+# Then enable:
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable restore-persistent-state.service
+#
+# What this does:
+#   Runs restore-persistent-state.sh as a oneshot service at early boot.
+#   Copies persistent state (SSH keys, BT pairings, NM conf.d, Tailscale state, user SSH keys) from
+#   /boot/firmware/persistent/ (FAT32, always writable) to ext4 system
+#   paths before dependent services start.
+#
+# Verify ordering after enabling:
+#   systemctl list-dependencies ssh.service --before
+#   -> should show restore-persistent-state.service
+#
+# Note: Verify boot-firmware.mount unit name on the live Pi:
+#   systemctl status boot-firmware.mount
+#   If unit name differs, update After= accordingly.
+#   (See research Assumption A2 and Pitfall 4)
+
+[Unit]
+Description=Restore persistent state from /boot/firmware
+DefaultDependencies=no
+After=local-fs.target boot-firmware.mount
+Before=ssh.service bluetooth.service NetworkManager.service tailscaled.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/bin/restore-persistent-state.sh
+
+[Install]
+WantedBy=sysinit.target

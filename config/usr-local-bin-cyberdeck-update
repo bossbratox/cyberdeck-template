@@ -1,0 +1,61 @@
+#!/bin/bash
+# Deploy to: /usr/local/bin/cyberdeck-update on Pi
+#
+# Then make executable:
+#   sudo chmod +x /usr/local/bin/cyberdeck-update
+#
+# What this does:
+#   Phase 1 of the two-reboot update workflow (D-05).
+#   1. Writes /boot/firmware/cyberdeck-update.flag
+#   2. Sets overlayroot=disabled in /etc/overlayroot.local.conf
+#   3. Reboots
+#
+#   On next boot, cyberdeck-update-apt.service detects the flag and runs
+#   apt upgrade automatically (Phase 2 of the workflow).
+#
+# Usage:
+#   sudo cyberdeck-update
+#
+# Per D-06: Update scope is apt upgrade only. For config changes, use a
+# manual unlock session (see deploy/README-overlayfs-lockdown.md).
+
+set -euo pipefail
+
+# Must run as root
+if [ "$(id -u)" -ne 0 ]; then
+    echo "Error: must run as root (sudo cyberdeck-update)" >&2
+    exit 1
+fi
+
+# Check if overlay is currently active
+if ! mountpoint -q /media/root-ro 2>/dev/null; then
+    echo "Warning: overlay is not currently active (root is already writable)."
+    echo "If you want to run apt upgrade manually, just run: apt update && apt upgrade"
+    echo "Aborting."
+    exit 1
+fi
+
+echo "=== Cyberdeck Update ==="
+echo "This will:"
+echo "  1. Unlock the overlay (disable read-only root)"
+echo "  2. Reboot"
+echo "  3. Run apt update && apt upgrade -y (automatic)"
+echo "  4. Re-lock the overlay"
+echo "  5. Reboot again"
+echo ""
+echo "Two reboots total. System returns to locked state automatically."
+echo ""
+
+# Write flag file to /boot/firmware (FAT32, always writable)
+touch /boot/firmware/cyberdeck-update.flag
+
+# Disable overlay for next boot — write to REAL ext4, not overlay tmpfs.
+# /media/root-ro is the lower (real) filesystem when overlay is active.
+mount -o remount,rw /media/root-ro
+echo 'overlayroot=disabled' > /media/root-ro/etc/overlayroot.local.conf
+mount -o remount,ro /media/root-ro
+
+echo "Flag written. Overlay will be disabled on next boot."
+echo "Rebooting in 3 seconds..."
+sleep 3
+systemctl reboot

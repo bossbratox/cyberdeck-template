@@ -1,0 +1,45 @@
+# Deploy to: /etc/systemd/system/bt-keyboard.service on Pi
+#
+# Enable:
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now bt-keyboard.service
+#
+# What this does:
+#   Attempts to reconnect the already-paired + trusted BT HID device
+#   (BLUEtouch iPhone app presenting as HID-over-GATT keyboard+mouse)
+#   at boot. The connect logic is a retry loop in /usr/local/bin/bt-reconnect.
+#
+#   Runs after bluetooth.service so the adapter is up. The script's own
+#   initial sleep gives the adapter a moment to settle before the first
+#   connect attempt.
+#
+# Per D-09: Auto-reconnect via systemd oneshot (preferred over cron @reboot).
+# Phase 2 already handles /var/lib/bluetooth/ persistence for pairing data.
+# This service only triggers the connection attempt.
+#
+# Override knobs (systemctl edit bt-keyboard.service):
+#   Environment=BT_MAC=AA:BB:CC:DD:EE:FF
+#   Environment=BT_CHECK_INTERVAL=10
+#   Environment=BT_CONNECT_ATTEMPTS=5
+#   Environment=BT_CONNECT_WAIT=4
+#   Environment=BT_INITIAL_DELAY=5
+#
+# Verify:
+#   systemctl is-enabled bt-keyboard.service
+#   systemctl status bt-keyboard.service
+#   journalctl -u bt-keyboard.service -f
+
+[Unit]
+Description=Bluetooth HID Watchdog (persistent reconnect)
+Documentation=https://github.com/bossbratox/cyberdeck-template
+After=bluetooth.service
+Wants=bluetooth.service
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/bt-reconnect
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

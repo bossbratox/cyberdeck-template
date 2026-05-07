@@ -1,0 +1,15 @@
+[Unit]
+Description=Cyberdeck Mermaid Pet
+After=systemd-user-sessions.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /opt/cyberdeck-pet/pet_fb_main.py
+Restart=on-failure
+RestartSec=2
+Environment=PYTHONPATH=/opt/cyberdeck-pet
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target

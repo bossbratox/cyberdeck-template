@@ -1,0 +1,107 @@
+# Deploy to: ~/.ssh/config on Pi
+# Also copy to: /boot/firmware/persistent/ssh-user/config
+#
+# What this does:
+#   SSH client config with host aliases for all servers on the Tailscale mesh
+#   plus public internet fallbacks for the three Linode servers.
+#
+# Ed25519 key auth only. User copies existing keypair to Pi.
+# ServerAliveInterval 60s, CountMax 3 — keeps sessions alive over flaky wifi.
+#
+# All placeholders filled in. Ready to deploy.
+#
+# Verify after deploy:
+#   for h in nextcloud web mail desktop laptop home-pi; do
+#     ssh -o BatchMode=yes -o ConnectTimeout=5 $h whoami && echo "$h OK" || echo "$h FAIL"
+#   done
+
+# -- ControlMaster -- shared across all cyberdeck TUIs --------
+# Socket on /tmp (tmpfs -- writable under overlayFS, supports Unix domain sockets).
+# ControlPersist=120s keeps master alive across dashboard's 30s poll cycle.
+Host nextcloud web mail desktop home-pi
+    ControlMaster auto
+    ControlPath /tmp/ssh-ctrl-%h
+    ControlPersist 120s
+    StrictHostKeyChecking accept-new
+
+# ── Remote Servers (Linode) ──────────────────────────────────
+
+# Nextcloud AIO + Headscale control plane
+Host nextcloud
+    HostName <YOUR_NEXTCLOUD_TAILSCALE_IP>
+    User <YOUR_SSH_USER>
+    Port 22
+    IdentityFile ~/.ssh/id_ed25519
+    ServerAliveInterval 60
+    ServerAliveCountMax 3
+
+Host nextcloud-pub
+    HostName <YOUR_NEXTCLOUD_PUBLIC_IP>
+    User <YOUR_SSH_USER>
+    Port 22
+    IdentityFile ~/.ssh/id_ed25519
+    ServerAliveInterval 60
+    ServerAliveCountMax 3
+
+# WordPress + Ghost (cyberdeck site)
+Host web
+    HostName <YOUR_WEB_TAILSCALE_IP>
+    User <YOUR_SSH_USER>
+    Port 22
+    IdentityFile ~/.ssh/id_ed25519
+    ServerAliveInterval 60
+    ServerAliveCountMax 3
+
+Host web-pub
+    HostName <YOUR_WEB_PUBLIC_IP>
+    User <YOUR_SSH_USER>
+    Port 22
+    IdentityFile ~/.ssh/id_ed25519
+    ServerAliveInterval 60
+    ServerAliveCountMax 3
+
+# Mail-in-a-Box
+Host mail
+    HostName <YOUR_MIAB_TAILSCALE_IP>
+    User <YOUR_SSH_USER>
+    Port 22
+    IdentityFile ~/.ssh/id_ed25519
+    ServerAliveInterval 60
+    ServerAliveCountMax 3
+
+Host mail-pub
+    HostName <YOUR_MIAB_PUBLIC_IP>
+    User <YOUR_SSH_USER>
+    Port 22
+    IdentityFile ~/.ssh/id_ed25519
+    ServerAliveInterval 60
+    ServerAliveCountMax 3
+
+# ── Local Machines ───────────────────────────────────────────
+
+# Primary desktop
+Host desktop
+    HostName <YOUR_DESKTOP_TAILSCALE_IP>
+    User <YOUR_SSH_USER>
+    Port 22
+    IdentityFile ~/.ssh/id_ed25519
+    ServerAliveInterval 60
+    ServerAliveCountMax 3
+
+# Framework laptop
+Host laptop
+    HostName <YOUR_LAPTOP_TAILSCALE_IP>
+    User <YOUR_SSH_USER>
+    Port 22
+    IdentityFile ~/.ssh/id_ed25519
+    ServerAliveInterval 60
+    ServerAliveCountMax 3
+
+# Pi 5 — infra dashboard + edge inference
+Host home-pi
+    HostName <YOUR_PI_TAILSCALE_IP>
+    User <YOUR_SSH_USER>
+    Port 22
+    IdentityFile ~/.ssh/id_ed25519
+    ServerAliveInterval 60
+    ServerAliveCountMax 3

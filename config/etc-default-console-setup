@@ -1,0 +1,32 @@
+# etc-default-console-setup
+#
+# DEPLOYMENT: This file replaces /etc/default/console-setup on the Pi.
+#   sudo cp config/etc-default-console-setup /etc/default/console-setup
+#   sudo setupcon
+#
+# NOTE: The original requirement was Inconsolata monospace, but Inconsolata is a TTF/OTF
+# font with no PSF (bitmap) console version. The Linux framebuffer TTY requires .psf.gz
+# format — Inconsolata cannot be used directly. Terminus is the standard TTY substitute:
+# it ships with console-setup, is purpose-built for framebuffer use, has excellent
+# box-drawing character support, and comes in multiple sizes.
+#
+# APPLY WITHOUT REBOOT: sudo setupcon
+#
+# ALTERNATIVE SIZES to test on hardware (edit FONTSIZE and run sudo setupcon to preview):
+#   10x20  — approx 64 columns x 24 rows — more content, smaller text
+#   12x24  — approx 53 columns x 20 rows — default choice, balanced
+#   14x28  — approx 45 columns x 17 rows — larger text, less content
+#
+# LIST AVAILABLE SIZES: ls /usr/share/consolefonts/ | grep Terminus
+# PREVIEW CURRENT FONT: showconsolefont
+#
+# KMS FONT RESET WARNING: The vc4-kms-v3d driver may reset the console font after boot,
+# causing the font to revert to default VGA even if console-setup is configured correctly.
+# If this happens, run: sudo setupcon
+# Or verify that console-setup.service runs after multi-user.target:
+#   sudo systemctl status console-setup.service
+
+CHARMAP="UTF-8"
+CODESET="Lat15"
+FONTFACE="Terminus"
+FONTSIZE="12x24"

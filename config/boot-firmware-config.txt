@@ -1,0 +1,31 @@
+# boot-firmware-config.txt
+#
+# DEPLOYMENT: These are ADDITIONS to append to /boot/firmware/config.txt on the Pi.
+# Do NOT replace the existing file — append these lines to the end.
+#
+# Usage: cat config/boot-firmware-config.txt >> /boot/firmware/config.txt
+#        Then: sudo reboot
+
+# === BASE KMS DRIVER (required on Bookworm — replaces deprecated fkms) ===
+dtoverlay=vc4-kms-v3d
+
+# === DISPLAY: Waveshare 4.3" DSI (ACTIVE — testing display) ===
+# Comment this block when switching to the Klayers 3.5" final display.
+dtoverlay=vc4-kms-dsi-7inch
+
+# Touch fallback for Waveshare 4.3" DSI:
+# Uncomment if touch not working after boot with 4.3" display.
+# Remove if it conflicts (erratic touch — rpi-ft5406 and vc4-kms-dsi-7inch can conflict).
+# dtoverlay=rpi-ft5406
+
+# === DISPLAY: Klayers 3.5" DSI 640x480 (FINAL BUILD — uncomment when ready) ===
+# Before enabling: download the custom overlay and place it in /boot/overlays/
+#   sudo wget -O /boot/overlays/Waveshare_35DSI.dtbo https://files.waveshare.com/wiki/common/Waveshare_35DSI.dtbo
+# Then comment out the Waveshare 4.3" block above and uncomment the line below.
+# dtoverlay=waveshare_35DSI,35E,dsi1
+
+# === COMMON HARDWARE SETTINGS ===
+# GPU memory: 64MB minimum for DSI framebuffer. Do NOT use gpu_mem=16 (headless-only value).
+gpu_mem=64
+# Audio: disabled — no audio hardware or use case on this build.
+dtparam=audio=off

@@ -1,0 +1,20 @@
+#!/bin/bash
+# Deploy to: /usr/local/bin/bt on Pi
+#
+# Then make executable:
+#   sudo chmod +x /usr/local/bin/bt
+#
+# What this does:
+#   Launches the Bluetooth manager TUI. Resets terminal colors on exit.
+
+trap 'printf "\e[0m\e[2J\e[H"' EXIT
+
+# Inside fbterm, force TERM=fbterm so curses sees 16+ colors.
+# fbterm sets TERM=linux by default which exposes only 8 colors, causing
+# bt_tui's init_pair(_, 15, _)/(_, 183, _)/(_, 230, _) calls to raise
+# ValueError: color number > COLORS-1 (7). Only override inside fbterm —
+# SSH keeps its native TERM (xterm-256color) untouched.
+[ -n "$FBTERM_ACTIVE" ] && export TERM=fbterm
+export PYTHONPATH=/opt/cyberdeck-shared
+
+exec python3 /opt/cyberdeck-bt/bt_tui.py "$@"

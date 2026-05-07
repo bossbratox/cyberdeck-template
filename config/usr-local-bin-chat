@@ -1,0 +1,32 @@
+#!/bin/bash
+# Deploy to: /usr/local/bin/chat on Pi
+#
+# Then make executable:
+#   sudo chmod +x /usr/local/bin/chat
+#
+# What this does:
+#   Launches cyberdeck chat TUI with pink background (xterm-256 color 218).
+#   Resets terminal colors on exit, even if the Python TUI crashes.
+#   Uses venv python directly — never system python (Pitfall 5, PEP 668).
+
+# Colors use 16-color SGR; the OSC palette in bashrc-ps1-motd.sh remaps
+# slot D (\e[105m) to a hotter pink (#FF87C7) chosen for luminance contrast
+# against the cream-text in chat_tui.py. fbterm 1.7 silently drops 256-color
+# SGR (see project_fbterm_16color memory) so 256-color escapes are forbidden.
+#
+# EXIT trap ensures bg always resets to the candy-pink terminal theme even if
+# Python crashes (T-04-07). \e[47;97m = candy pink bg + cream fg per palette.
+trap 'printf "\e[0m\e[47;97m\e[2J"' EXIT
+
+printf '\e[105;97m'      # hotter-pink bg (slot D) + cream fg (slot 15)
+printf '\e[2J'           # clear screen with new bg color
+
+# Inside fbterm, force TERM=fbterm so curses sees the 256-color terminfo.
+# fbterm itself sets TERM=linux (fbterm.1.in:177) which exposes only 8 colors,
+# breaking init_pair(_, 15, _) etc. Only override inside fbterm — SSH keeps its
+# native TERM (xterm-256color) untouched.
+[ -n "$FBTERM_ACTIVE" ] && export TERM=fbterm
+export PYTHONPATH=/opt/cyberdeck-shared
+
+# Call venv python directly — do NOT source activate in non-interactive script
+exec /opt/cyberdeck-chat/venv/bin/python /opt/cyberdeck-chat/chat_tui.py "$@"

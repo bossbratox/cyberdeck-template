@@ -1,0 +1,14 @@
+# Cyberdeck shell launcher — auto-start daemon on tty1 only.
+# SSH sessions and the F1 terminal (which sets CYBERDECK_NO_DAEMON=1) fall
+# through to normal bash.
+
+if [ "$(tty)" = "/dev/tty1" ] && [ -z "$SSH_CONNECTION" ] && [ -z "$SSH_TTY" ] && [ -z "$CYBERDECK_NO_DAEMON" ]; then
+    exec /usr/bin/python3 /opt/cyberdeck-shell/shell_daemon.py
+fi
+
+# Source ~/.bashrc for interactive login shells. Without this, the F1
+# terminal (bash -l with CYBERDECK_NO_DAEMON=1) skips bashrc-ps1-motd.sh,
+# leaving PS1 unset and the bold-slot-7 → slot-15 white-fg trick unapplied
+# on prompt redraws. Result: typed input renders in candy-pink-on-candy-pink
+# (invisible). Standard convention; also benefits SSH sessions.
+[ -f ~/.bashrc ] && . ~/.bashrc

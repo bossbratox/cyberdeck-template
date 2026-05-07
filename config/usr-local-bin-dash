@@ -1,0 +1,18 @@
+#!/bin/bash
+# Deploy to: /usr/local/bin/dash on Pi
+#
+# Then make executable:
+#   sudo chmod +x /usr/local/bin/dash
+#
+# What this does:
+#   Launches the cyberdeck monitoring dashboard.
+#   Polls all servers + cyberdeck every 30s.
+#   q to quit.
+
+# Reset to terminal theme on exit (candy pink bg + white fg).
+trap 'printf "\e[0m\e[47;97m\e[2J\e[H"' EXIT
+
+[ -n "$FBTERM_ACTIVE" ] && export TERM=fbterm
+export PYTHONPATH=/opt/cyberdeck-shared
+
+exec python3 /opt/cyberdeck-dash/dash_tui.py

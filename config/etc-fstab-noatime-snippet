@@ -1,0 +1,30 @@
+# Deploy to: verify/edit /etc/fstab on Pi
+#
+# Pi OS Bookworm sets noatime on the root ext4 partition by default.
+# This file is a reference snippet — verify it's present before assuming.
+#
+# Verify noatime is active:
+#   cat /proc/mounts | grep ' / ' | grep noatime
+#   -> If this returns output, noatime is active. You're done.
+#
+# If noatime is MISSING from /proc/mounts:
+#   1. Edit /etc/fstab and add noatime to the root partition options:
+#      PARTUUID=xxxxxxxx-02  /  ext4  defaults,noatime  0  1
+#   2. Apply immediately without rebooting:
+#      sudo mount -o remount /
+#   3. Verify: cat /proc/mounts | grep ' / ' | grep noatime
+#
+# Why noatime matters:
+#   By default, Linux updates atime (last access time) on every file read.
+#   On an SD card, this means every read triggers a write — doubling the
+#   write load and accelerating card wear. noatime disables atime updates
+#   entirely. Since this is a read-mostly device (SSH sessions, config files),
+#   the loss of atime tracking has no practical impact.
+#
+#   noatime vs relatime: relatime (Linux default since 2009) still writes
+#   atime when mtime is newer than atime. noatime never writes atime.
+#   For SD card longevity, noatime is strictly better.
+
+# Example /etc/fstab root partition line with noatime:
+# (Replace PARTUUID with the actual value from your system)
+PARTUUID=xxxxxxxx-02  /  ext4  defaults,noatime  0  1

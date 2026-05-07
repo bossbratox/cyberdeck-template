@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+*.pyo
+*.swp
+*.swo
+*.kate-swp
+*.bak
+.pytest_cache/
+.claude/
+# symlink to Vault doc — machine-local path, breaks on other machines
+cyberdeck.md

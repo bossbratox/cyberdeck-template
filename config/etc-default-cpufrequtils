@@ -1,0 +1,29 @@
+# Deploy to: /etc/default/cpufrequtils on Pi
+#
+# Prerequisites:
+#   sudo apt install cpufrequtils
+#
+# The cpufrequtils service reads this file at boot and sets the CPU governor.
+#
+# Governor choices:
+#   conservative  - Scales CPU frequency up gradually when load increases,
+#                   scales back down when idle. Best for battery life on
+#                   interactive workloads. Does NOT starve keyboard/input.
+#   powersave     - Locks CPU at minimum frequency. Can cause input latency
+#                   on compact keyboards. Avoid on this build.
+#   performance   - Locks CPU at maximum frequency. Burns battery fast.
+#                   1200mAh LiPo will not last. Avoid on this build.
+#
+# On Bookworm, raspberrypi-sys-mods may also set the governor via udev rules.
+# cpufrequtils takes precedence after its service starts at boot.
+# If governor reverts to ondemand/schedutil, check:
+#   systemctl status cpufrequtils
+#
+# Verification (after reboot):
+#   cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+#   -> should output: conservative
+#
+#   cpufreq-info
+#   -> shows current governor, available frequencies, and per-core status
+
+GOVERNOR="conservative"

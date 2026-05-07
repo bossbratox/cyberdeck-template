@@ -1,0 +1,28 @@
+# Deploy to: /etc/systemd/system/overlay-killswitch.service on Pi
+#
+# Then enable:
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable overlay-killswitch.service
+#
+# What this does:
+#   Boot-time check for /boot/firmware/overlay.disable flag file.
+#   If the file exists, disables overlay and reboots into writable root.
+#   Part of D-10 recovery — allows disabling overlay from any OS
+#   by touching a file on the FAT32 boot partition.
+#
+# ConditionPathExists ensures this service is a no-op on normal boots.
+# Runs BEFORE restore-persistent-state to catch the kill-switch early.
+
+[Unit]
+Description=Overlay kill-switch (D-10 recovery)
+DefaultDependencies=no
+After=local-fs.target boot-firmware.mount
+Before=restore-persistent-state.service
+ConditionPathExists=/boot/firmware/overlay.disable
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/overlay-killswitch.sh
+
+[Install]
+WantedBy=sysinit.target

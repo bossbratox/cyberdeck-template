@@ -1,0 +1,19 @@
+[Unit]
+Description=Cyberdeck touchscreen -> virtual mouse translator
+Documentation=https://github.com/bossbratox/cyberdeck-template
+After=systemd-udevd.service
+Wants=systemd-udevd.service
+
+[Service]
+Type=simple
+ExecStart=/opt/cyberdeck-touch/venv/bin/python /opt/cyberdeck-touch/touch-to-mouse.py
+Restart=on-failure
+RestartSec=2s
+# Needs access to /dev/uinput + /dev/input/event0
+SupplementaryGroups=input
+AmbientCapabilities=CAP_SYS_ADMIN
+# ~15MB resident for python-evdev; cap at 32MB for early-warning
+MemoryMax=32M
+
+[Install]
+WantedBy=multi-user.target

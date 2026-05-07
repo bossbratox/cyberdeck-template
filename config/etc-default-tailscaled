@@ -1,0 +1,19 @@
+# Deploy to: /etc/default/tailscaled on Pi
+#
+# What this does:
+#   Sets tailscaled daemon flags. The default statedir /var/lib/tailscale
+#   is on ext4, populated by restore-persistent-state.sh at boot from
+#   the FAT32 persistent store.
+#
+# Why not --statedir on FAT32:
+#   Tailscale uses SQLite WAL mode. FAT32 lacks POSIX advisory locks
+#   required for WAL shared memory. State corruption or startup failure
+#   results. Use restore-script pattern instead.
+#
+# After first Tailscale auth, copy state back to persistent store:
+#   sudo cp -a /var/lib/tailscale/. /boot/firmware/persistent/tailscale/
+#
+# Verify: systemctl cat tailscaled.service | grep EnvironmentFile
+
+FLAGS=""
+PORT="41641"

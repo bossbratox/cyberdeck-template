@@ -1,0 +1,57 @@
+# Deploy to: ~/.fbtermrc on Pi (user-owned, 0644)
+#
+# fbterm config for cyberdeck 3.5" DSI (640x480 framebuffer).
+# Replaces kmscon so tmux/nmtui can receive mouse events via the
+# touch-to-mouse translator (kmscon has zero xterm mouse support
+# compiled in; fbterm has native xterm mouse-mode forwarding).
+#
+# Font: Inconsolata (TTF, antialiased by freetype).
+# Note: TTF fonts on fbterm may show AA color fringing against pastel
+# backgrounds at low framebuffer depth. Terminus (bitmap) is the
+# fringe-free fallback — switch back to `font-names=Terminus` +
+# `font-size=20` if Inconsolata fringes unacceptably.
+# Requires: sudo apt install fonts-inconsolata
+#
+# Font size 26 on a 640x480 DSI gives ~18 rows x 26 cols — big and
+# legible on 3.5". Adjust ±2 for readability vs. content density.
+#
+# Palette: handled HERE via color-N=RRGGBB lines below (silenvx patch).
+# Stock fbterm 1.7-5 cannot remap palette via any escape sequence
+# (verified — \e]P, OSC 4, and fbterm-native \e[3;n;r;g;b} all fail).
+# Local build fbterm 1.7-5+pinkdeck1 carries silenvx config_colors patch
+# which reads color-0..color-15 from fbtermrc on every VT switch.
+# Held via apt-mark hold so apt upgrade won't replace it.
+
+font-names=Spleen 16x32
+font-size=32
+cursor-shape=0
+cursor-interval=500
+history-size=1000
+ambiguous-wide=no
+word-chars=._-
+input-method=
+
+# cyberdeck pastel palette — drives all 16-color SGR in the configs.
+# Mappings used by callers (bashrc PS1/MOTD, chat, wifi, bt):
+#   slot 5  (\e[35m / \e[45m)  = deep pink  — PS1 accent
+#   slot 7  (\e[37m / \e[47m)  = candy pink — default bg via \e[47m
+#   slot 13 (\e[95m / \e[105m) = hotter pink — chat bg via \e[105m
+#   slot 15 (\e[97m / \e[107m) = white      — default fg via \e[97m
+color-0=2A1F28
+color-1=E8A0BF
+color-2=C8E6A0
+color-3=F5DEB3
+color-4=B0C4DE
+color-5=FF00CC
+color-6=A5F2E5
+color-7=FFAFD7
+color-8=6B5466
+color-9=F8C0DF
+color-10=D8F6C0
+color-11=FFEDC3
+color-12=D0E4EE
+color-13=FF00CC
+color-14=C5FFF5
+color-15=FFFFFF
+color-foreground=15
+color-background=7

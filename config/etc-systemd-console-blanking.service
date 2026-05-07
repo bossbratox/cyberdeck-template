@@ -1,0 +1,42 @@
+# Deploy to: /etc/systemd/system/console-blanking.service on Pi
+#
+# Then enable and start:
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable console-blanking.service
+#   sudo systemctl start console-blanking.service
+#
+# What this does:
+#   Blanks the DSI display after 5 minutes of keyboard/touch inactivity.
+#   -blank 5       = blank screen after 5 minutes idle
+#   -powerdown 6   = power down display 1 minute after blanking (6 min total)
+#
+# Why setterm, not DPMS:
+#   DPMS (Display Power Management Signaling) is unreliable on DSI/DPI
+#   framebuffer displays on the Pi. setterm writes directly to the virtual
+#   console and works correctly with DSI panels.
+#
+# Unblanking:
+#   Any keypress or touch input will unblank the screen immediately.
+#
+# WARNING: Do NOT set consoleblank=0 in /boot/firmware/cmdline.txt
+#   That kernel parameter disables console blanking entirely. This build
+#   wants 5-minute blanking — use this service, not a disabling kernel param.
+#
+# Verify the service is running:
+#   systemctl status console-blanking.service
+#   -> should show: active (exited) — oneshot services exit after running
+
+[Unit]
+Description=Enable virtual console blanking after 5 minutes idle
+After=multi-user.target systemd-logind.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+Environment=TERM=linux
+StandardOutput=tty
+TTYPath=/dev/console
+ExecStart=/usr/bin/setterm -blank 5 -powerdown 6
+
+[Install]
+WantedBy=multi-user.target

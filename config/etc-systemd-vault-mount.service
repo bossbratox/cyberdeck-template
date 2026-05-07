@@ -1,0 +1,17 @@
+[Unit]
+Description=Bind-mount persistent Vault into home (bypass overlayroot tmpfs)
+DefaultDependencies=no
+After=local-fs.target
+Before=multi-user.target ssh.service NetworkManager.service
+ConditionPathIsMountPoint=/media/root-ro
+ConditionPathIsMountPoint=!/home/<YOUR_USER>/Vault
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStartPre=/bin/mount -o remount,rw /media/root-ro
+ExecStart=/bin/mount --bind /media/root-ro/data/Vault /home/<YOUR_USER>/Vault
+ExecStop=/bin/umount /home/<YOUR_USER>/Vault
+
+[Install]
+WantedBy=multi-user.target

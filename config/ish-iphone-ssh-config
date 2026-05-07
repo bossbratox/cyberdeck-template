@@ -1,0 +1,82 @@
+# Deploy to: ~/.ssh/config inside iSH on iPhone 16
+#
+# What this does:
+#   SSH client config for all servers on the Tailscale mesh.
+#   iPhone 16 is on Tailscale (<YOUR_IPHONE_TAILSCALE_IP>) so all hosts use mesh IPs.
+#   No public fallbacks — iPhone always has cellular for Tailscale.
+#
+# Setup steps:
+#   1. Generate or copy ed25519 keypair into iSH:
+#      ssh-keygen -t ed25519 -C "<YOUR_USER>@iphone-16"
+#      — OR copy existing key from another device
+#   2. Add public key to each server:
+#      ssh-copy-id -i ~/.ssh/id_ed25519.pub <YOUR_USER>@<server_tailscale_ip>
+#   3. Copy this file to ~/.ssh/config inside iSH
+#   4. chmod 600 ~/.ssh/config && chmod 600 ~/.ssh/id_ed25519
+#
+# All placeholders filled in. Ready to deploy.
+#
+# Verify:
+#   for h in nextcloud web mail desktop laptop home-pi cyberdeck; do
+#     ssh -o BatchMode=yes -o ConnectTimeout=5 $h whoami && echo "$h OK" || echo "$h FAIL"
+#   done
+
+# ── Remote Servers (Linode) ──────────────────────────────────
+
+Host nextcloud
+    HostName <YOUR_NEXTCLOUD_TAILSCALE_IP>
+    User <YOUR_SSH_USER>
+    Port 22
+    IdentityFile ~/.ssh/id_ed25519
+    ServerAliveInterval 60
+    ServerAliveCountMax 3
+
+Host web
+    HostName <YOUR_WEB_TAILSCALE_IP>
+    User <YOUR_SSH_USER>
+    Port 22
+    IdentityFile ~/.ssh/id_ed25519
+    ServerAliveInterval 60
+    ServerAliveCountMax 3
+
+Host mail
+    HostName <YOUR_MIAB_TAILSCALE_IP>
+    User <YOUR_SSH_USER>
+    Port 22
+    IdentityFile ~/.ssh/id_ed25519
+    ServerAliveInterval 60
+    ServerAliveCountMax 3
+
+# ── Local Machines ───────────────────────────────────────────
+
+Host desktop
+    HostName <YOUR_DESKTOP_TAILSCALE_IP>
+    User <YOUR_SSH_USER>
+    Port 22
+    IdentityFile ~/.ssh/id_ed25519
+    ServerAliveInterval 60
+    ServerAliveCountMax 3
+
+Host laptop
+    HostName <YOUR_LAPTOP_TAILSCALE_IP>
+    User <YOUR_SSH_USER>
+    Port 22
+    IdentityFile ~/.ssh/id_ed25519
+    ServerAliveInterval 60
+    ServerAliveCountMax 3
+
+Host home-pi
+    HostName <YOUR_PI_TAILSCALE_IP>
+    User <YOUR_SSH_USER>
+    Port 22
+    IdentityFile ~/.ssh/id_ed25519
+    ServerAliveInterval 60
+    ServerAliveCountMax 3
+
+Host cyberdeck
+    HostName <YOUR_CYBERDECK_TAILSCALE_IP>
+    User <YOUR_SSH_USER>
+    Port 22
+    IdentityFile ~/.ssh/id_ed25519
+    ServerAliveInterval 60
+    ServerAliveCountMax 3

@@ -1,0 +1,18 @@
+#!/bin/bash
+# Deploy to: /usr/local/bin/reader on Pi
+#
+# Then make executable:
+#   sudo chmod +x /usr/local/bin/reader
+#
+# What this does:
+#   Launches the cyberdeck reader TUI.
+#   Browses Obsidian vault and PDFs over SSH; renders markdown with
+#   wikilink navigation and paginated display.
+
+# Reset to terminal theme on exit (candy pink bg + white fg).
+trap 'printf "\e[0m\e[47;97m\e[2J\e[H"' EXIT
+
+[ -n "$FBTERM_ACTIVE" ] && export TERM=fbterm
+export PYTHONPATH=/opt/cyberdeck-shared
+
+exec python3 /opt/cyberdeck-reader/reader_tui.py

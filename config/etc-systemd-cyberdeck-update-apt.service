@@ -1,0 +1,27 @@
+# Deploy to: /etc/systemd/system/cyberdeck-update-apt.service on Pi
+#
+# Then enable:
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable cyberdeck-update-apt.service
+#
+# What this does:
+#   Boot-triggered oneshot that runs apt upgrade when the cyberdeck-update
+#   flag file exists on /boot/firmware. Part of the D-05 two-reboot update
+#   workflow. Only fires when cyberdeck-update has been run (which writes
+#   the flag file and disables the overlay before rebooting).
+#
+# ConditionPathExists ensures this service is a no-op on normal boots.
+
+[Unit]
+Description=Cyberdeck automated apt upgrade (overlay unlock session)
+After=network-online.target
+Wants=network-online.target
+ConditionPathExists=/boot/firmware/cyberdeck-update.flag
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/bin/cyberdeck-update-apt.sh
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,10 @@
+# Source art and generated assets (large binary files, not tracked)
+fb_assets_source/
+fb_assets/
+# Preview images
+*_preview.png
+all_*.png
+# Python cache
+__pycache__/
+*.pyc
+*.pyo

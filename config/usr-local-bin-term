@@ -1,0 +1,26 @@
+#!/bin/bash
+# Terminal with F-key app switching.
+#
+# fbterm 1.7 silently drops \e]P palette overrides; colors come from
+# ~/.fbtermrc. Slots 7 (candy pink) and 15 (white) are already defined
+# there, so we just select them via SGR to guarantee visible text even
+# when bash starts without sourcing ~/.bashrc (term_wrapper.py runs bash
+# with -l, and ~/.bash_profile exits early under CYBERDECK_NO_DAEMON
+# without sourcing ~/.bashrc — so the bashrc's PS1/bg setup never runs).
+
+export TERM=fbterm
+export PYTHONPATH=/opt/cyberdeck-shared
+export CYBERDECK_NO_DAEMON=1
+
+# Reset palette + clear on exit so the next app gets a clean canvas.
+trap 'printf "\e[0m\e[42;35m\e[2J\e[H"' EXIT
+
+# Terminal theme: mint-green bg + deep-pink fg.
+#   bg = slot 2 (mint green, C8E6A0) via \e[42m
+#   fg = slot 5 (deep pink, FF5FAF) via \e[35m
+# Both slots are defined in ~/.fbtermrc and use SGR 30-37/40-47 only,
+# which is the subset fbterm 1.7 actually honors (see bashrc-ps1-motd.sh
+# for the full palette doc). Chosen for visibility on a 3.5" panel.
+printf '\e[42;35m\e[2J\e[H'
+
+exec /opt/cyberdeck-shell/term_wrapper.py
