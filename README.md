@@ -1,7 +1,7 @@
 # 🌊 cyberdeck 🐚
 
 a pocket computer that lives in your purse and runs a fully customizable tamagotchi and much much more 🧜‍♀️
-there is no GUI, no desktop, no X11, no Wayland, no nonsense. just a full TUI stack that includes a full bash terminal, local ai chat interface, pdf to text e-reader, markdown text editor, remote server monitor dashboard, wifi, bluetooth, and of course a tamagatchi. the tamagotchi pet is **fully reskinnable** — swap in your own sprite art and she becomes whoever you want. cat, robot, demon, whatever. See [custom art](#custom-art) for what files to make. 
+there is no GUI, no desktop, no X11, no Wayland, no nonsense. just a full TUI stack that includes a full bash terminal, local ai chat interface, pdf to text e-reader, markdown text editor, remote server monitor dashboard, wifi, bluetooth, and of course a tamagatchi. the tamagatchi pet is **fully reskinnable** — swap in your own sprite art and she becomes whoever you want. cat, robot, demon, whatever. See [custom art](#custom-art) for what files to make. 
 
 this cyberdeck os was designed specifically to work efficiently on resource constrained systems and solve common 
 issues faced when using a cyberdeck in the real world - power efficiency, memory card corruption from abrupt power offs, and friction interacting with existing systems. this os attempts to problem solve and integrate with the rest of your personal tech stack whether that consists of a pc, laptop, smartphone, tablet, server, cloud or even another cyberdeck.
